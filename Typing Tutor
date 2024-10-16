@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_WORD_LENGTH 20
+
+// Node structure for linked list
+typedef struct WordNode {
+    char text[MAX_WORD_LENGTH];
+    struct WordNode *next;
+} WordNode;
+
+// Structure to track user scores
+typedef struct Score {
+    int correct;
+    int total;
+    time_t start_time;
+    time_t end_time;
+} Score;
+// Function to add a word to the linked list
+void addWord(WordNode **head, const char *word) {
+    WordNode *newNode = (WordNode *)malloc(sizeof(WordNode));
+    strcpy(newNode->text, word);
+    newNode->next = *head;
+    *head = newNode;
+}
+
+// Function to free the linked list
+void freeWords(WordNode *head) {
+    WordNode *tmp;
+    
+    while (head != NULL) {
+        tmp = head;
+        head = head->next;
+        free(tmp);
+    }
+}
+// Function to load words into the linked list
+void loadWords(WordNode **head) {
+    char *sampleWords[] = {"apple", "banana", "cherry", "date", "elderberry"};
+    int sampleCount = sizeof(sampleWords) / sizeof(sampleWords[0]);
+    
+    for (int i = 0; i < sampleCount; i++) {
+        addWord(head, sampleWords[i]);
+    }
+}
+
+// Function to start the typing test
+void startTypingTest(WordNode *head, Score *score) {
+    char input[MAX_WORD_LENGTH];
+    WordNode *current = head;
+    score->correct = 0;
+    score->total = 0;
+    score->start_time = time(NULL);
+    
+    while (current != NULL) {
+        printf("Type the word: %s\n", current->text);
+        scanf("%s", input);
+        
+        if (strcmp(input, current->text) == 0) {
+            score->correct++;
+        }
+        score->total++;
+        current = current->next;
+    }
+    
+    score->end_time = time(NULL);
+}
+
+// Function to display the results
+void displayResults(Score score) {
+    double time_taken = difftime(score.end_time, score.start_time);
+    printf("Correct words: %d\n", score.correct);
+    printf("Total words: %d\n", score.total);
+    printf("Accuracy: %.2f%%\n", (double)score.correct / score.total * 100);
+    printf("Time taken: %.2f seconds\n", time_taken);
+    printf("Words per minute: %.2f WPM\n", (double)score.correct / time_taken * 60);
+}
+// Main function
+int main() {
+    WordNode *wordList = NULL;
+    Score score;
+    
+    loadWords(&wordList);
+    startTypingTest(wordList, &score);
+    displayResults(score);
+    freeWords(wordList);
+    
+    return 0;
+}
